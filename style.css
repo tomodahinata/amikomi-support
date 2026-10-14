@@ -1,0 +1,82 @@
+/* layout: archetype=Long Document · axis=left-biased · date=2026-10-15 */
+/*
+ * あみこみ サポートの共通の stylesheet。外部のフォント・画像・script は読み込まない（訪問者の情報を第三者に送らない）。
+ * 色はアプリの主色（赤紫、色相 約 340°: amikomi の docs/DECISIONS.md DEC-035）から取り、16 進で書く。
+ * scripts/check-site.mjs が、light と dark の両方で文字と背景の組が WCAG 2.2 AA（本文 4.5:1、線と枠 3:1）を満たすかを
+ * この file の値から計算する。値を変えたら `node scripts/check-site.mjs` を走らせる。
+ */
+:root {
+  color-scheme: light dark;
+  --ink: #241a22;
+  --ink-soft: #5c4d58;
+  --ground: #fcfafb;
+  --surface: #f4eef2;
+  --line: #e2d8df;
+  --accent: #9c2f84;
+  --focus: #9c5a00;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f3edf1;
+    --ink-soft: #c9bcc5;
+    --ground: #181216;
+    --surface: #241c21;
+    --line: #3d323a;
+    --accent: #f2a2dc;
+    --focus: #f0b54a;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", Meiryo, -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+:lang(ja) { line-break: strict; word-break: normal; overflow-wrap: anywhere; line-height: 1.75; letter-spacing: 0.02em; }
+:lang(ja) h1, :lang(ja) h2, :lang(ja) h3 { word-break: auto-phrase; line-height: 1.4; letter-spacing: 0; }
+@supports (text-autospace: normal) { :lang(ja) { text-autospace: normal; } }
+
+.skip { position: absolute; left: 16px; top: -48px; padding: 8px 12px; background: var(--ground); color: var(--ink); }
+.skip:focus { top: 8px; }
+
+.page { width: min(36em, 100% - 32px); margin: 0 auto; padding: 24px 0 96px; }
+header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: baseline; justify-content: space-between; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+header a { color: var(--ink-soft); text-decoration: none; }
+header a:hover { color: var(--ink); text-decoration: underline; }
+.home { font-weight: 700; color: var(--ink); }
+
+h1 { font-size: clamp(1.75rem, 1.5vw + 1.4rem, 2.25rem); font-weight: 700; margin: 64px 0 12px; }
+h2 { font-size: 1.375rem; font-weight: 700; margin: 64px 0 12px; }
+h3 { font-size: 1.0625rem; font-weight: 700; margin: 40px 0 8px; }
+p, li { margin: 0 0 12px; }
+ul { padding-left: 1.4em; margin: 0 0 12px; }
+.lead { color: var(--ink-soft); }
+.meta { color: var(--ink-soft); font-size: 0.9375rem; }
+.summary { margin: 40px 0 0; padding: 16px 0 4px; border-top: 2px solid var(--accent); border-bottom: 1px solid var(--line); }
+.summary li { margin-bottom: 8px; }
+.contact { margin: 24px 0; padding: 16px; background: var(--surface); border-radius: 12px; }
+.contact p:last-child { margin-bottom: 0; }
+
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:focus-visible, .skip:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+/* 指で押す link は 44pt 以上の高さを取る（iOS の HIG）。 */
+nav a, .related a, header a { display: inline-block; min-height: 44px; padding: 10px 0; }
+
+table { width: 100%; border-collapse: collapse; margin: 0 0 24px; }
+caption { text-align: left; font-weight: 700; padding: 0 0 8px; }
+th, td { text-align: left; vertical-align: top; padding: 12px 8px 12px 0; border-bottom: 1px solid var(--line); }
+th { width: 34%; font-weight: 700; }
+@media (max-width: 480px) {
+  th, td { display: block; width: 100%; padding: 8px 0; }
+  th { border-bottom: 0; padding-bottom: 0; }
+}
+
+footer { margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--line); }
