@@ -1,9 +1,10 @@
-/* layout: archetype=Long Document · axis=left-biased · date=2026-10-15 */
+/* layout: archetype=Index-First · axis=top-heavy · date=2026-10-28 */
 /*
  * あみこみ サポートの共通の stylesheet。外部のフォント・画像・script は読み込まない（訪問者の情報を第三者に送らない）。
  * 色はアプリの主色（赤紫、色相 約 340°: amikomi の docs/DECISIONS.md DEC-035）から取り、16 進で書く。
  * scripts/check-site.mjs が、light と dark の両方で文字と背景の組が WCAG 2.2 AA（本文 4.5:1、線と枠 3:1）を満たすかを
- * この file の値から計算する。値を変えたら `node scripts/check-site.mjs` を走らせる。
+ * この file の :root の値から計算する。値を変えたら `node scripts/check-site.mjs` を走らせる。
+ * 図案の SVG（.chart）は飾り。編み目は幅:高さ = 18:24 の縦長（編み目は正方形ではない）。
  */
 :root {
   color-scheme: light dark;
@@ -14,6 +15,7 @@
   --line: #e2d8df;
   --accent: #9c2f84;
   --focus: #9c5a00;
+  --cell-b: #e6d6e1;
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -24,6 +26,7 @@
     --line: #3d323a;
     --accent: #f2a2dc;
     --focus: #f0b54a;
+    --cell-b: #3a2d37;
   }
 }
 
@@ -44,39 +47,106 @@ body {
 :lang(ja) h1, :lang(ja) h2, :lang(ja) h3 { word-break: auto-phrase; line-height: 1.4; letter-spacing: 0; }
 @supports (text-autospace: normal) { :lang(ja) { text-autospace: normal; } }
 
+h1, h2 { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "Iowan Old Style", Georgia, serif; font-weight: 700; }
+
 .skip { position: absolute; left: 16px; top: -48px; padding: 8px 12px; background: var(--ground); color: var(--ink); }
 .skip:focus { top: 8px; }
 
-.page { width: min(36em, 100% - 32px); margin: 0 auto; padding: 24px 0 96px; }
-header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: baseline; justify-content: space-between; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
-header a { color: var(--ink-soft); text-decoration: none; }
-header a:hover { color: var(--ink); text-decoration: underline; }
-.home { font-weight: 700; color: var(--ink); }
+.page { width: min(60rem, 100% - 32px); margin: 0 auto; padding: 8px 0 64px; }
+main { display: block; }
 
-h1 { font-size: clamp(1.75rem, 1.5vw + 1.4rem, 2.25rem); font-weight: 700; margin: 64px 0 12px; }
-h2 { font-size: 1.375rem; font-weight: 700; margin: 64px 0 12px; }
-h3 { font-size: 1.0625rem; font-weight: 700; margin: 40px 0 8px; }
+/* 上の帯: 戻る先と言語。指で押す link は 44pt 以上（iOS の HIG）。 */
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 56px; border-bottom: 1px solid var(--line); }
+.bar a { display: inline-flex; align-items: center; min-height: 44px; color: var(--ink); text-decoration: none; }
+.brand { gap: 10px; font-weight: 700; }
+.brand:hover span, .lang:hover { text-decoration: underline; }
+.lang { color: var(--ink-soft); padding-left: 8px; }
+.mark { width: 20px; height: 20px; flex: none; }
+.mark .c1, .chart .c1 { fill: var(--accent); }
+.mark .c0, .chart .c0 { fill: var(--cell-b); }
+
+/* 先頭: 左に題と説明、右に図案。図案は右の余白へ少しはみ出す。 */
+.hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: center; padding: 40px 0 24px; }
+.chart { width: min(14rem, 62%); height: auto; justify-self: start; }
+.chart .now { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+h1 { font-size: clamp(1.875rem, 2.2vw + 1.4rem, 2.75rem); margin: 0 0 12px; }
+.lead { margin: 0; color: var(--ink-soft); }
+@media (min-width: 768px) {
+  .hero { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 40px; padding: 64px 0 40px; }
+  .chart { width: 100%; max-width: 20rem; justify-self: end; margin-right: -24px; }
+  :lang(ja) .lead { max-width: 30em; }
+  .lead { max-width: 34em; }
+}
+
+h2 { font-size: 1.375rem; margin: 64px 0 16px; }
 p, li { margin: 0 0 12px; }
-ul { padding-left: 1.4em; margin: 0 0 12px; }
-.lead { color: var(--ink-soft); }
+ul, ol { padding-left: 1.4em; margin: 0 0 12px; }
 .meta { color: var(--ink-soft); font-size: 0.9375rem; }
-.summary { margin: 40px 0 0; padding: 16px 0 4px; border-top: 2px solid var(--accent); border-bottom: 1px solid var(--line); }
-.summary li { margin-bottom: 8px; }
-.contact { margin: 24px 0; padding: 16px; background: var(--surface); border-radius: 12px; }
-.contact p:last-child { margin-bottom: 0; }
+
+/* 用事の索引: 左に分類、右に質問への link（台帳）。狭い画面では分類が上、link が下。 */
+.topics { margin: 0; border-top: 1px solid var(--line); }
+.topics .row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px 24px; padding: 16px 0 4px; border-bottom: 1px solid var(--line); }
+.topics dt { font-weight: 700; color: var(--ink-soft); }
+.topics dd { margin: 0; }
+.topics ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0 20px; }
+.topics li { margin: 0; }
+.topics a { display: inline-flex; align-items: center; min-height: 44px; }
+@media (min-width: 768px) {
+  .topics .row { grid-template-columns: minmax(0, 2fr) minmax(0, 5fr); padding: 8px 0; }
+  .topics dt { align-self: center; }
+}
+
+/* よくある質問: 1 つずつ開く。狭い画面で長い文を先に見せない。 */
+details { border-bottom: 1px solid var(--line); }
+details:first-of-type { border-top: 1px solid var(--line); }
+summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 52px; padding: 8px 0; font-weight: 700; cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; flex: none; width: 24px; text-align: center; font-size: 1.375rem; font-weight: 400; color: var(--accent); }
+details[open] > summary::after { content: "\2212"; }
+summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.answer { padding: 0 0 12px; }
+.answer p { max-width: 38em; }
+details:target { background: var(--surface); }
+.toc { margin: 24px 0 0; border-top: 1px solid var(--line); }
+.toc ol { columns: 1; padding-left: 1.8em; }
+@media (min-width: 768px) { .toc ol { columns: 2; column-gap: 40px; } }
+.toc li { break-inside: avoid; }
+
+/* 問い合わせ: 左にメール、右に補足。 */
+.contact { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px 40px; padding: 24px 16px; background: var(--surface); border-radius: 16px; }
+.contact p { margin: 0 0 8px; }
+.ask { font-weight: 700; }
+.mail { font-size: 1.125rem; overflow-wrap: anywhere; }
+@media (min-width: 768px) { .contact { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); padding: 24px; } }
 
 a { color: var(--accent); text-underline-offset: 0.2em; }
 a:focus-visible, .skip:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
-/* 指で押す link は 44pt 以上の高さを取る（iOS の HIG）。 */
-nav a, .related a, header a { display: inline-block; min-height: 44px; padding: 10px 0; }
+.related { list-style: none; padding: 0; }
+.related a, .foot a { display: inline-flex; align-items: center; min-height: 44px; }
 
-table { width: 100%; border-collapse: collapse; margin: 0 0 24px; }
-caption { text-align: left; font-weight: 700; padding: 0 0 8px; }
-th, td { text-align: left; vertical-align: top; padding: 12px 8px 12px 0; border-bottom: 1px solid var(--line); }
-th { width: 34%; font-weight: 700; }
-@media (max-width: 480px) {
-  th, td { display: block; width: 100%; padding: 8px 0; }
-  th { border-bottom: 0; padding-bottom: 0; }
+/* プライバシーポリシーなど長い文は、読む幅を狭くする。 */
+main > p, main > ul, main > h3 { max-width: 38em; }
+main > h1 { margin-top: 40px; }
+.summary { margin: 24px 0 0; padding: 16px 0 4px; border-top: 2px solid var(--accent); border-bottom: 1px solid var(--line); list-style-position: inside; }
+.summary li { margin-bottom: 8px; }
+h3 { font-size: 1.0625rem; margin: 40px 0 8px; }
+
+/* 特定商取引法: 価格を先に大きく、その下に表示事項。 */
+.price { margin: 24px 0; padding: 24px 16px; background: var(--surface); border-radius: 16px; }
+.price p { margin: 0 0 4px; }
+.amount { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", Georgia, serif; font-size: 2rem; font-weight: 700; line-height: 1.3; }
+.facts { margin: 0 0 24px; }
+.facts > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px 24px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.facts dt { font-weight: 700; }
+.facts dd { margin: 0; overflow-wrap: anywhere; }
+@media (min-width: 768px) { .facts > div { grid-template-columns: minmax(0, 2fr) minmax(0, 5fr); } }
+
+.foot { margin-top: 96px; padding-top: 16px; border-top: 1px solid var(--line); }
+.foot ul { list-style: none; padding: 0; margin: 0 0 8px; display: flex; flex-wrap: wrap; gap: 0 24px; }
+.foot li { margin: 0; }
+.foot [aria-current="page"] { color: var(--ink); font-weight: 700; text-decoration: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  details > .answer { animation: open 200ms cubic-bezier(0.05, 0.7, 0.1, 1); }
+  @keyframes open { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 }
-
-footer { margin-top: 96px; padding-top: 24px; border-top: 1px solid var(--line); }
